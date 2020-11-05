@@ -125,7 +125,7 @@ def updateOldCircles(frame,framenumber):
                     centerX= tupledata[0]
                     centerY= tupledata[1]
                     cv2.circle(frame, (centerX,centerY), 1,(0, 255, 0), 2)
-                    cv2.putText(frame, cname, (centerX,centerY),cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 1)
+                    #cv2.putText(frame, cname, (centerX,centerY),cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 1)
            
     return frame
 
