@@ -54,11 +54,15 @@ def kalman(x,y):
 
     return (smoothed_state_means[:, 0].tolist(),smoothed_state_means[:, 2].tolist())
 
-def resample(series, currenttime, targettime):
+def resample(series_x,series_y, currenttime, targettime):
     
-    resampledseries = [] 
+    resampledseries_x = [] 
+    resampledseries_y = [] 
 
-    for time in targettime:
+    resampledseries_x.append(series_x[0])
+    resampledseries_y.append(series_y[0])
+
+    for time in targettime[1:]:
         
         # find closeset and second closest sample in time
 
@@ -70,33 +74,38 @@ def resample(series, currenttime, targettime):
         else: secondclosestindex = values.index(values[closestindex+1])
 
 
-        closesttimevalue = currenttime[closestindex]
+        minindex = min([closestindex,secondclosestindex])
 
-        secondclosesttimevalue = currenttime[secondclosestindex]
+        maxindex = max([closestindex,secondclosestindex])
 
-        closestspacevalue = series[closestindex]
+        
+        mintimevalue = currenttime[minindex]
 
-        secondclosestspacevalue = series[secondclosestindex]
-
+        maxtimevalue = currenttime[maxindex]
 
         # remapping between time doamin and space domain 
 
-        old_min = min([closesttimevalue,secondclosesttimevalue])
+        resampledseries_x.append(remap (time,mintimevalue,maxtimevalue,series_x[maxindex],series_x[minindex]))
+        resampledseries_y.append(remap (time,mintimevalue,maxtimevalue,series_y[maxindex],series_y[minindex]))
 
-        old_max = max([closesttimevalue,secondclosesttimevalue])
+    # measurements =  np.column_stack((resampledseries_x, resampledseries_y))
+    # origmeasurements =  np.column_stack((series_x, [i+10 for i in series_y]))
+    # plt.figure(1)
+    # for i in range(0,len(resampledseries_x)):
+    #     plt.text(resampledseries_x[i], resampledseries_y[i], str(i), bbox=dict(facecolor='red', alpha=0.5))
+    # plt.plot(measurements[:, 0], measurements[:, 1], 'bo', measurements[:, 0], measurements[:, 1], 'b--',)
+    # plt.plot(origmeasurements[:, 0], origmeasurements[:, 1], 'ro', origmeasurements[:, 0], origmeasurements[:, 1], 'r--',)
+    # plt.show()
 
-        old_value = time
+    return resampledseries_x,resampledseries_y
 
-        new_max = max([closestspacevalue,secondclosestspacevalue])
 
-        new_min = min([closestspacevalue,secondclosestspacevalue])
+def remap (old_value,old_min,old_max,new_max,new_min):
 
-        new_value = ( (old_value - old_min) / (old_max - old_min) ) * (new_max - new_min) + new_min
+    new_value = ( (old_value - old_min) / (old_max - old_min) ) * (new_max - new_min) + new_min
+
+    return new_value
         
-        resampledseries.append(new_value);
-    
-
-    return resampledseries
 
 for cname in old_data.columns:
         if not 'Unnamed' in cname and  not 'timestamp' in cname and not 'index' in cname:
@@ -112,17 +121,19 @@ for cname in old_data.columns:
             series = [ [ int(i) for i in item.replace('(','').replace(')','').split(',')] for item in old_data[cname] if type(item) is str]           
 
             deltatimeNanoSeconds = int(deltatimeMilliSeconds * 1000000)
-            targetdeltatimeNanoSeconds = int(1000000000/72) #(1s/72) in nanoseconds = 13,888,888 N
+            targetdeltatimeNanoSeconds = 13900000
 
+            
             #generate timestamps
             endindex = len(series) + startIndex
             indexArray = range( startIndex , endindex )  
             currenttimeArray = [ i*deltatimeNanoSeconds for i in indexArray]
 
-            endindex = int(int(currenttimeArray[-1]-currenttimeArray[0])/targetdeltatimeNanoSeconds)
-            targetindexArray = range( startIndex , startIndex+endindex )  
-            targettimeArray = [ i*targetdeltatimeNanoSeconds for i in targetindexArray]
-            targettimeArrayinsec = [ i/1000000000 for i in targettimeArray]
+            deltaindex = int(int(currenttimeArray[-1]-currenttimeArray[0])/targetdeltatimeNanoSeconds)
+            targetindexArray = range( 0 , deltaindex )  
+            targettimeArray = [ i*targetdeltatimeNanoSeconds+currenttimeArray[0] for i in targetindexArray]
+            
+            
 
             #extract the x and y series 
             x = [ item[0] for item in series ]
@@ -132,17 +143,18 @@ for cname in old_data.columns:
             kalman_x,kalman_y = kalman(x,y)
 
             #resampled
-            resampled_x = resample(kalman_x,currenttimeArray,targettimeArray)
-            resampled_y = resample(kalman_y,currenttimeArray,targettimeArray)
-
+            resampled_x,resampled_y = resample(kalman_x,kalman_y,currenttimeArray,targettimeArray)
+            
             #sizing all columns accordingly
             dir_x = [0] * len(resampled_x)
             dir_y = [0] * len(resampled_x)
             id = [int(cname)]*len(resampled_x)
             gid = id 
             
-            print(len(resampled_y))
-           
+            print(len(resampled_x))
+            
+            targettimeArrayinsec = [ i/1000000000 for i in targettimeArray]
+
             new_d= {'id':id,'gid':gid,'x':resampled_x,'y':resampled_y,'dir_x':dir_x,'dir_y':dir_y,'radius':dir_y,'time':targettimeArrayinsec}
             new_user = pd.DataFrame(data=new_d)
             
