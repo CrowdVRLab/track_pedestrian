@@ -37,6 +37,15 @@ def kalman(x,y):
     kf1 = kf1.em(measurements, n_iter=5)
     (smoothed_state_means, smoothed_state_covariances) = kf1.smooth(measurements)
 
+    kf2 = KalmanFilter(transition_matrices = transition_matrix,
+                  observation_matrices = observation_matrix,
+                  initial_state_mean = initial_state_mean,
+                  observation_covariance = 10000000*kf1.observation_covariance,
+                  em_vars=['transition_covariance', 'initial_state_covariance'])
+
+    kf2 = kf2.em(measurements, n_iter=5)
+    (smoothed_state_means, smoothed_state_covariances)  = kf2.smooth(measurements)
+
     # plt.figure(1)
     # times = range(measurements.shape[0])
     # plt.plot(measurements[:, 0], measurements[:, 1], 'bo',
@@ -98,6 +107,8 @@ for cname in old_data.columns:
                     break
                 startIndex+=1
 
+            print("processing ---> " + cname)
+
             series = [ [ int(i) for i in item.replace('(','').replace(')','').split(',')] for item in old_data[cname] if type(item) is str]           
 
             deltatimeNanoSeconds = int(deltatimeMilliSeconds * 1000000)
@@ -109,7 +120,7 @@ for cname in old_data.columns:
             currenttimeArray = [ i*deltatimeNanoSeconds for i in indexArray]
 
             endindex = int(int(currenttimeArray[-1]-currenttimeArray[0])/targetdeltatimeNanoSeconds)
-            targetindexArray = range( startIndex , endindex )  
+            targetindexArray = range( startIndex , startIndex+endindex )  
             targettimeArray = [ i*targetdeltatimeNanoSeconds for i in targetindexArray]
             targettimeArrayinsec = [ i/1000000000 for i in targettimeArray]
 
@@ -130,10 +141,13 @@ for cname in old_data.columns:
             id = [int(cname)]*len(resampled_x)
             gid = id 
             
+            print(len(resampled_y))
            
             new_d= {'id':id,'gid':gid,'x':resampled_x,'y':resampled_y,'dir_x':dir_x,'dir_y':dir_y,'radius':dir_y,'time':targettimeArrayinsec}
             new_user = pd.DataFrame(data=new_d)
             
             new_data = new_data.append(new_user) 
+
+            print(len(new_data))
 
 new_data.to_csv("video1/tracking_data_per_user_resampled.csv")
