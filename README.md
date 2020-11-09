@@ -6,4 +6,4 @@ The software allows a user to define a tracking object, once the video is comple
 
 Trackers comes from OpenCV https://docs.opencv.org/3.4/d9/df8/group__tracking.html \
 
-![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
+![alt text](https://github.com/sbanca/track_pedestrian/blob/main/pedestrian_tracking.gif?raw=true)
