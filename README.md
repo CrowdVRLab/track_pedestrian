@@ -24,12 +24,21 @@ __--tracker__: str object tracker type csrt,kcf,boosting,mil,tld,medianflow,moss
 __--showID__: bool Show the ID of the tracked objects loaded from tracking_data.csv\
 __--playMode__: bool in this mode the script plays without the need of defining an ID\
 
-for example:\
+for example:
 
 ```
 python tracking.py --path video3 --tracker csrt
 ```
-Once the script is launched you will be prompt to define a tracking area with the mouse, once the area has been defined you can press enter, subsequently you can define another area/tracker. Once you defined a number of racker you are happy with you can press [Q] for the video to start and the tracker to start tracking.
+Once the script is launched a user will be prompt to define a tracking area with the mouse, once the area has been defined you can press enter, subsequently you can define another area/tracker. Once you defined a number of tracker you are happy with you can press [Q] for the video to start and the tracker to start tracking.
 If a pedestrian enters the video area you can press [S] to define a new tracker.
 If you experienced a wronlgy tracked pedestrian during a session you can open tracking_data.csv and remove the column with the pedestrian id.
+If tracking is launched for a video that does not have a tracking_data.csv a tracking_data.csv will be saved once the video has completed a full play/track loop. 
+
+
+
+### tracking_data.csv
+
+index |  timestamp | pedestrian 1 | pedestrian n
+------------ | ------------- |------------- |-------------
+(int) | (float) | (float,float)| (float,float)
 
