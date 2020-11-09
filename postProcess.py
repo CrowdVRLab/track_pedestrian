@@ -6,10 +6,27 @@ import math
 from pykalman import KalmanFilter
 import cv2
 import imutils
+import argparse
+
+# construct the argument parser and parse the arguments
+ap = argparse.ArgumentParser()
+ap.add_argument("-p", "--path", type=str,
+	help="Path to input video file")
+ap.add_argument("-k", "--kalman", type=bool, default=False,
+	help="Apply Kalman filter")
+ap.add_argument("-r", "--resampling", type=bool, default=False,
+	help="Resample the tracked data")
+ap.add_argument("-mX", "--mirrorX", type=bool, default=False,
+	help="Mirror X data")
+ap.add_argument("-mY", "--mirrorY", type=bool, default=False,
+	help="Mirror Y data")
+ap.add_argument("-pR", "--plotResults", type=bool, default=False,
+	help="Mirror Y data")
+args = vars(ap.parse_args())
 
 #data to be converted and relative video
-old_data = pd.read_csv("video1/tracking_data.csv")
-vs = cv2.VideoCapture("video1/videos.mp4")
+old_data = pd.read_csv(args["path"]+"/"+"tracking_data.csv" )
+vs = cv2.VideoCapture(args["path"]+"/"+"video.mp4" )
 
 #reading video frame and get frame shape 
 frame = vs.read()
@@ -63,11 +80,12 @@ def kalman(x,y):
     kf2 = kf2.em(measurements, n_iter=5)
     (smoothed_state_means, smoothed_state_covariances)  = kf2.smooth(measurements)
 
-    # plt.figure(1)
-    # times = range(measurements.shape[0])
-    # plt.plot(measurements[:, 0], measurements[:, 1], 'bo',
-    #         smoothed_state_means[:, 0], smoothed_state_means[:, 2], 'b--',)
-    # plt.show()
+    if (args["plotResults"]):
+        plt.figure(1)
+        times = range(measurements.shape[0])
+        plt.plot(measurements[:, 0], measurements[:, 1], 'bo',
+                smoothed_state_means[:, 0], smoothed_state_means[:, 2], 'b--',)
+        plt.show()
 
 
     return (smoothed_state_means[:, 0].tolist(),smoothed_state_means[:, 2].tolist())
@@ -106,14 +124,15 @@ def resample(series_x,series_y, currenttime, targettime):
         resampledseries_x.append(remap (time,mintimevalue,maxtimevalue,series_x[maxindex],series_x[minindex]))
         resampledseries_y.append(remap (time,mintimevalue,maxtimevalue,series_y[maxindex],series_y[minindex]))
 
-    # measurements =  np.column_stack((resampledseries_x, resampledseries_y))
-    # origmeasurements =  np.column_stack((series_x, [i+10 for i in series_y]))
-    # plt.figure(1)
-    # for i in range(0,len(resampledseries_x)):
-    #     plt.text(resampledseries_x[i], resampledseries_y[i], str(i), bbox=dict(facecolor='red', alpha=0.5))
-    # plt.plot(measurements[:, 0], measurements[:, 1], 'bo', measurements[:, 0], measurements[:, 1], 'b--',)
-    # plt.plot(origmeasurements[:, 0], origmeasurements[:, 1], 'ro', origmeasurements[:, 0], origmeasurements[:, 1], 'r--',)
-    # plt.show()
+    if (args["plotResults"]):
+        measurements =  np.column_stack((resampledseries_x, resampledseries_y))
+        origmeasurements =  np.column_stack((series_x, [i+2 for i in series_y]))
+        plt.figure(1)
+        # for i in range(0,len(resampledseries_x)):
+        #     plt.text(resampledseries_x[i], resampledseries_y[i], str(i), bbox=dict(facecolor='red', alpha=0.5))
+        plt.plot(measurements[:, 0], measurements[:, 1], 'bo', measurements[:, 0], measurements[:, 1], 'b--',)
+        plt.plot(origmeasurements[:, 0], origmeasurements[:, 1], 'ro', origmeasurements[:, 0], origmeasurements[:, 1], 'r--',)
+        plt.show()
 
     return resampledseries_x,resampledseries_y
 
@@ -122,7 +141,6 @@ def remap (old_value,old_min,old_max,new_max,new_min):
     new_value = ( (old_value - old_min) / (old_max - old_min) ) * (new_max - new_min) + new_min
 
     return new_value
-
 
 for cname in old_data.columns:
         if not 'Unnamed' in cname and  not 'timestamp' in cname and not 'index' in cname:
