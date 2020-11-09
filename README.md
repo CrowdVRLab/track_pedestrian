@@ -16,7 +16,7 @@ Kalman Filter\
 Resampling\
 ![alt text](https://github.com/sbanca/track_pedestrian/blob/main/images/resampling.PNG?raw=true)
 
-## Tracking.py
+## tracking.py
 
 This script has 4 arguments
 
@@ -50,9 +50,9 @@ This script has 6 arguments
 __--path__: str the path folder where the video.mp4 is saved\
 __--kalman__: bool Apply Kalman filter\
 __--resampling__: bool Resample the tracked data to a specific framerate\
-__--mirrorX__: Mirror X data\
-__--mirrorY"__:Mirror Y data\
-__--plotResults__:Mirror Y data
+__--mirrorX__: bool mirror X data\
+__--mirrorY"__: bool mirror Y data\
+__--plotResults__: bool plot the results of kalman filtering and resampling for each of the tracks 
 
 for example:
 
