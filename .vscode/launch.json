@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args":["--video", "videos.mp4", "--tracker", "csrt"]
+            "args":["-p", "video2", "--tracker", "csrt"]
         }
     ]
 }

@@ -4,18 +4,35 @@ import pandas as pd
 import numpy as np
 import math
 from pykalman import KalmanFilter
+import cv2
+import imutils
 
+#data to be converted and relative video
 old_data = pd.read_csv("video1/tracking_data.csv")
+vs = cv2.VideoCapture("video1/videos.mp4")
+
+#reading video frame and get frame shape 
+frame = vs.read()
+frame = frame[1]
+frame = imutils.resize(frame, width=1200)
+(image_height, image_width) = frame.shape[:2]
+
+
+#target data format 
 
 d = {'id':[],'gid':[],'x':[],'y':[],'dir_x':[],'dir_y':[],'radius':[],'time':[]}
 
 new_data = pd.DataFrame(data=d)
+
+
+#timestamps calculate delat step
 
 timestamps = [ item for item in old_data["timestamp"] ]
 
 deltaTimestamp = [ timestamps[i] - timestamps[i-1] for i in range(0, len(timestamps), 1) if i > 0 ]
 
 deltatimeMilliSeconds = np.mean(np.array(deltaTimestamp)) 
+
 
 def kalman(x,y):
 
@@ -51,6 +68,7 @@ def kalman(x,y):
     # plt.plot(measurements[:, 0], measurements[:, 1], 'bo',
     #         smoothed_state_means[:, 0], smoothed_state_means[:, 2], 'b--',)
     # plt.show()
+
 
     return (smoothed_state_means[:, 0].tolist(),smoothed_state_means[:, 2].tolist())
 
@@ -99,13 +117,12 @@ def resample(series_x,series_y, currenttime, targettime):
 
     return resampledseries_x,resampledseries_y
 
-
 def remap (old_value,old_min,old_max,new_max,new_min):
 
     new_value = ( (old_value - old_min) / (old_max - old_min) ) * (new_max - new_min) + new_min
 
     return new_value
-        
+
 
 for cname in old_data.columns:
         if not 'Unnamed' in cname and  not 'timestamp' in cname and not 'index' in cname:
@@ -122,8 +139,7 @@ for cname in old_data.columns:
 
             deltatimeNanoSeconds = int(deltatimeMilliSeconds * 1000000)
             targetdeltatimeNanoSeconds = 13900000
-
-            
+           
             #generate timestamps
             endindex = len(series) + startIndex
             indexArray = range( startIndex , endindex )  
@@ -133,14 +149,16 @@ for cname in old_data.columns:
             targetindexArray = range( 0 , deltaindex )  
             targettimeArray = [ i*targetdeltatimeNanoSeconds+currenttimeArray[0] for i in targetindexArray]
             
-            
-
             #extract the x and y series 
             x = [ item[0] for item in series ]
             y = [ item[1] for item in series ]
+            
+            #reverse axes to match unity orientations
+            reversed_x = x 
+            reversed_y = [ image_height-i for i in y] 
 
             #kalman filtered values 
-            kalman_x,kalman_y = kalman(x,y)
+            kalman_x,kalman_y = kalman(reversed_x,reversed_y)
 
             #resampled
             resampled_x,resampled_y = resample(kalman_x,kalman_y,currenttimeArray,targettimeArray)
