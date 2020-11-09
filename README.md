@@ -42,3 +42,27 @@ index |  timestamp | pedestrian 1 | pedestrian n
 ------------ | ------------- |------------- |-------------
 (int) | (float) | (float,float)| (float,float)
 
+## postProcess.py
+
+This script has 4 arguments 
+__--path__: str the path folder where the video.mp4 is saved\
+__--kalman__: bool Apply Kalman filter\
+__--resampling__: bool Resample the tracked data to a specific framerate\
+__--mirrorX__: Mirror X data\
+__--mirrorY"__:Mirror Y data\
+__--plotResults__:Mirror Y data
+
+for example:
+
+```
+python postProcess.py --path video3 
+```
+Once the script is launched it will load the dataset from tracking_data.csv and transform it into the following format 
+
+### tracking_data_per_user.csv
+
+id |  guid | x | y | dir_x | dir_y | radius | time | 
+-- | ----- | - | - | ----- | ----- | ------ | ---- |
+(int) | (int) | (float) | (float)  | (float)  | (float)  | (float)| (float)| 
+
+
