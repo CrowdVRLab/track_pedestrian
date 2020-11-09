@@ -18,7 +18,8 @@ Resampling\
 
 ## Tracking.py
 
-This script has 4 arguments 
+This script has 4 arguments
+
 __--path__: str the path folder where the video.mp4 is saved\
 __--tracker__: str object tracker type csrt,kcf,boosting,mil,tld,medianflow,mosse check opencv documentation\
 __--showID__: bool Show the ID of the tracked objects loaded from tracking_data.csv\
@@ -44,7 +45,8 @@ index |  timestamp | pedestrian 1 | pedestrian n
 
 ## postProcess.py
 
-This script has 4 arguments 
+This script has 6 arguments
+
 __--path__: str the path folder where the video.mp4 is saved\
 __--kalman__: bool Apply Kalman filter\
 __--resampling__: bool Resample the tracked data to a specific framerate\
