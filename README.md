@@ -10,4 +10,8 @@ A second script "postProcess.py" allow for noise removal and resampling of the p
 Noise removal is performed via Kalman Filter (pykalman) and is sucesfull in removing head oscillating noise from the trajectory
 Ultimately the script also allows for resampling (up/down) to your desired framerate
 
+Kalman Filter
+![alt text](https://github.com/sbanca/track_pedestrian/blob/main/images/kalman_filter.PNG?raw=true)
 
+Resampling
+![alt text](https://github.com/sbanca/track_pedestrian/blob/main/images/resampling.PNG?raw=true)
