@@ -126,7 +126,7 @@ def resample(series_x,series_y, currenttime, targettime):
 
     if (args["plotResults"]):
         measurements =  np.column_stack((resampledseries_x, resampledseries_y))
-        origmeasurements =  np.column_stack((series_x, [i+2 for i in series_y]))
+        origmeasurements =  np.column_stack((series_x, [i+10 for i in series_y]))
         plt.figure(1)
         # for i in range(0,len(resampledseries_x)):
         #     plt.text(resampledseries_x[i], resampledseries_y[i], str(i), bbox=dict(facecolor='red', alpha=0.5))
