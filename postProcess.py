@@ -10,17 +10,17 @@ import argparse
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-p", "--path", type=str,
+ap.add_argument("-p", "--path", type=str, default="video4",
 	help="Path to input video file")
 ap.add_argument("-k", "--kalman", type=bool, default=True,
 	help="Apply Kalman filter")
 ap.add_argument("-r", "--resampling", type=bool, default=True,
 	help="Resample the tracked data")
-ap.add_argument("-mX", "--mirrorX", type=bool, default=True,
+ap.add_argument("-mX", "--mirrorX", type=bool, default=False,
 	help="Mirror X data")
-ap.add_argument("-mY", "--mirrorY", type=bool, default=False,
+ap.add_argument("-mY", "--mirrorY", type=bool, default=True,
 	help="Mirror Y data")
-ap.add_argument("-pR", "--plotResults", type=bool, default=True,
+ap.add_argument("-pR", "--plotResults", type=bool, default=False,
 	help="Mirror Y data")
 args = vars(ap.parse_args())
 
@@ -88,7 +88,7 @@ def kalman(x,y):
         plt.show()
 
 
-    return (smoothed_state_means[:, 0].tolist(),smoothed_state_means[:, 2].tolist())
+    return smoothed_state_means[:, 0].tolist(),smoothed_state_means[:, 2].tolist()
 
 def resample(series_x,series_y, currenttime, targettime):
     
@@ -106,9 +106,8 @@ def resample(series_x,series_y, currenttime, targettime):
 
         closestindex = values.index(min(values))
         
-        if(closestindex>0): secondclosestindex = values.index(min([values[closestindex+1], values[closestindex-1]]))
+        if(closestindex>0 ): secondclosestindex = values.index(min([values[closestindex+1], values[closestindex-1]]))
         else: secondclosestindex = values.index(values[closestindex+1])
-
 
         minindex = min([closestindex,secondclosestindex])
 
@@ -138,6 +137,8 @@ def resample(series_x,series_y, currenttime, targettime):
 
 def remap (old_value,old_min,old_max,new_max,new_min):
 
+    if(new_max==new_min): return new_max
+
     new_value = ( (old_value - old_min) / (old_max - old_min) ) * (new_max - new_min) + new_min
 
     return new_value
@@ -155,6 +156,8 @@ for cname in old_data.columns:
 
             series = [ [ int(i) for i in item.replace('(','').replace(')','').split(',')] for item in old_data[cname] if type(item) is str]           
 
+            if(len(series)<2): continue
+
             #generate timestamps
             deltatimeNanoSeconds = int(deltatimeMilliSeconds * 1000000)
             targetdeltatimeNanoSeconds = 13900000
@@ -166,6 +169,7 @@ for cname in old_data.columns:
             deltaindex = int(int(currenttimeArray[-1]-currenttimeArray[0])/targetdeltatimeNanoSeconds)
             targetindexArray = range( 0 , deltaindex )  
             targettimeArray = [ i*targetdeltatimeNanoSeconds+currenttimeArray[0] for i in targetindexArray]
+            targettimeArray = [ i for i in targettimeArray if i < currenttimeArray[-2]]
             
             #extract the x and y series 
             x = [ item[0] for item in series ]
@@ -176,10 +180,10 @@ for cname in old_data.columns:
             y = [ image_height-i for i in y]  if args["mirrorY"] else y
 
             #kalman filtered values 
-            x,y = kalman(x,y) if args["kalman"] else x,y
+            if args["kalman"]: x,y = kalman(x,y) 
 
             #resampled
-            x,y = resample(x,y,currenttimeArray,targettimeArray) if args["resampling"] else x,y
+            if args["resampling"] : x,y = resample(x,y,currenttimeArray,targettimeArray) 
             
             #sizing all columns accordingly
             dir_x = [0] * len(x)
@@ -194,6 +198,6 @@ for cname in old_data.columns:
             new_data = new_data.append(new_user) 
 
 
-new_data.to_csv("video1/tracking_data_per_user_resampled.csv")
+new_data.to_csv(args["path"]+"/"+"tracking_data_per_user_resampled.csv")
 
 #https://devconnected.com/how-to-remove-files-from-git-commit/

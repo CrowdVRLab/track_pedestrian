@@ -10,13 +10,13 @@ import cv2
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-p", "--path", type=str,
+ap.add_argument("-p", "--path", type=str, default="video4",
 	help="Path to input video file")
 ap.add_argument("-t", "--tracker", type=str, default="csrt",
 	help="OpenCV object tracker type csrt,kcf,boosting,mil,tld,medianflow,mosse check opencv documentation ")
 ap.add_argument("-s", "--showID", type=bool, default=False,
 	help="Show the ID of the tracked objects loaded from tracking_data.csv")
-ap.add_argument("-pM", "--playMode", type=bool, default=False,
+ap.add_argument("-pM", "--playMode", type=bool, default=True,
 	help="Only play old data")
 args = vars(ap.parse_args())
 
@@ -36,7 +36,7 @@ frame = imutils.resize(frame, width=1200)
 (H, W) = frame.shape[:2]
 
 # Define the codec and create VideoWriter object for output video
-out = cv2.VideoWriter(outputVideoNameAndLocation,cv2.VideoWriter_fourcc('M','J','P','G'), 55, (W,H))
+out = cv2.VideoWriter(outputVideoNameAndLocation,cv2.VideoWriter_fourcc('M','J','P','G'), fps, (W,H))
 old_data_bool=False
 
 #variables
