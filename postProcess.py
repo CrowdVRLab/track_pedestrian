@@ -12,15 +12,15 @@ import argparse
 ap = argparse.ArgumentParser()
 ap.add_argument("-p", "--path", type=str,
 	help="Path to input video file")
-ap.add_argument("-k", "--kalman", type=bool, default=False,
+ap.add_argument("-k", "--kalman", type=bool, default=True,
 	help="Apply Kalman filter")
-ap.add_argument("-r", "--resampling", type=bool, default=False,
+ap.add_argument("-r", "--resampling", type=bool, default=True,
 	help="Resample the tracked data")
-ap.add_argument("-mX", "--mirrorX", type=bool, default=False,
+ap.add_argument("-mX", "--mirrorX", type=bool, default=True,
 	help="Mirror X data")
 ap.add_argument("-mY", "--mirrorY", type=bool, default=False,
 	help="Mirror Y data")
-ap.add_argument("-pR", "--plotResults", type=bool, default=False,
+ap.add_argument("-pR", "--plotResults", type=bool, default=True,
 	help="Mirror Y data")
 args = vars(ap.parse_args())
 
@@ -155,14 +155,14 @@ for cname in old_data.columns:
 
             series = [ [ int(i) for i in item.replace('(','').replace(')','').split(',')] for item in old_data[cname] if type(item) is str]           
 
+            #generate timestamps
             deltatimeNanoSeconds = int(deltatimeMilliSeconds * 1000000)
             targetdeltatimeNanoSeconds = 13900000
-           
-            #generate timestamps
+            #current
             endindex = len(series) + startIndex
             indexArray = range( startIndex , endindex )  
             currenttimeArray = [ i*deltatimeNanoSeconds for i in indexArray]
-
+            #target
             deltaindex = int(int(currenttimeArray[-1]-currenttimeArray[0])/targetdeltatimeNanoSeconds)
             targetindexArray = range( 0 , deltaindex )  
             targettimeArray = [ i*targetdeltatimeNanoSeconds+currenttimeArray[0] for i in targetindexArray]
@@ -172,30 +172,28 @@ for cname in old_data.columns:
             y = [ item[1] for item in series ]
             
             #reverse axes to match unity orientations
-            reversed_x = x 
-            reversed_y = [ image_height-i for i in y] 
+            x = [ image_height-i for i in x]  if args["mirrorX"] else x 
+            y = [ image_height-i for i in y]  if args["mirrorY"] else y
 
             #kalman filtered values 
-            kalman_x,kalman_y = kalman(reversed_x,reversed_y)
+            x,y = kalman(x,y) if args["kalman"] else x,y
 
             #resampled
-            resampled_x,resampled_y = resample(kalman_x,kalman_y,currenttimeArray,targettimeArray)
+            x,y = resample(x,y,currenttimeArray,targettimeArray) if args["resampling"] else x,y
             
             #sizing all columns accordingly
-            dir_x = [0] * len(resampled_x)
-            dir_y = [0] * len(resampled_x)
-            id = [int(cname)]*len(resampled_x)
+            dir_x = [0] * len(x)
+            dir_y = [0] * len(x)
+            id = [int(cname)]*len(x)
             gid = id 
-            
-            print(len(resampled_x))
-            
-            targettimeArrayinsec = [ i/1000000000 for i in targettimeArray]
+            recordtimeArrayinsec = [ i/1000000000 for i in targettimeArray] if args["resampling"] else [ i/1000000000 for i in currenttimeArray]
 
-            new_d= {'id':id,'gid':gid,'x':resampled_x,'y':resampled_y,'dir_x':dir_x,'dir_y':dir_y,'radius':dir_y,'time':targettimeArrayinsec}
-            new_user = pd.DataFrame(data=new_d)
-            
+            #write user 
+            new_d= {'id':id,'gid':gid,'x':x,'y':y,'dir_x':dir_x,'dir_y':dir_y,'radius':dir_y,'time':recordtimeArrayinsec}
+            new_user = pd.DataFrame(data=new_d)            
             new_data = new_data.append(new_user) 
 
-            print(len(new_data))
 
 new_data.to_csv("video1/tracking_data_per_user_resampled.csv")
+
+#https://devconnected.com/how-to-remove-files-from-git-commit/
