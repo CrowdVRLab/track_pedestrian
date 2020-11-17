@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             //"args":["-p", "video4", "--tracker", "csrt"]
-            "args":["-p", "video4"]
+            "args":["-p", "video4",]
         }
     ]
 }

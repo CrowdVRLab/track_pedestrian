@@ -16,6 +16,8 @@ ap.add_argument("-t", "--tracker", type=str, default="csrt",
 	help="OpenCV object tracker type csrt,kcf,boosting,mil,tld,medianflow,mosse check opencv documentation ")
 ap.add_argument("-s", "--showID", type=bool, default=False,
 	help="Show the ID of the tracked objects loaded from tracking_data.csv")
+ap.add_argument("-sP", "--showPreviousData", type=bool, default=True,
+	help="Only play old data")
 ap.add_argument("-pM", "--playMode", type=bool, default=True,
 	help="Only play old data")
 args = vars(ap.parse_args())
@@ -42,6 +44,7 @@ old_data_bool=False
 #variables
 tracker = []
 initBB = []
+initBBOld =[]
 timestamps=[]
 #tracker types "csrt","kcf","boosting","mil","tld","medianflow","mosse" check opencv documentation 
 trackerType = args["tracker"]
@@ -95,6 +98,13 @@ def addTracker(frame):
             
         elif key == ord("q"): break
 
+def deleteTracker():
+
+    if len(tracker) == 1 or not args["playMode"]:
+        initBB.pop(0)
+        tracker.pop(0)     
+        addTracker(frame)
+
 def updateTrackers(frame):
 
     if len(tracker) >0 or args["playMode"]:
@@ -109,11 +119,19 @@ def updateTrackers(frame):
                 centerX = int(x+w/2)
                 centerY = int(y+h/2)
                 initBB[i] = box
-                if centerX<10 or centerY<10 or centerX>W-10 or centerY>H-10:
+                if centerX<5 or centerY<5 or centerX>W-5 or centerY>H-5:
                     print("remove -> "+str(i))
                     tracker[i] = None
-                    initBB[i] = None
-            i+=1
+                    initBB[i] = None                 
+            else:
+                #remove unsucesfull
+                print(str(i) + " was unsucesfull")
+                print("remove -> "+str(i))
+                initBB.pop(i)
+                tracker.pop(i)
+                #add new tracker
+                addTracker(frame)
+        i+=1
 
     else:
         addTracker(frame)
@@ -140,16 +158,17 @@ def updateOldCircles(frame,framenumber):
 
     #this highlight the data that has already been tracked  
 
-    for cname in old_data.columns:
-        if not 'Unnamed' in cname and  not 'timestamp' in cname and not 'index' in cname:
-            if old_data.shape[0]>framenumber:
-                if isinstance(old_data.at[int(framenumber),cname], str):
-                    tupledata = tuple(map(int, old_data.at[framenumber,cname].replace('(', '').replace(')', '').split(', ') ))
-                    centerX= tupledata[0]
-                    centerY= tupledata[1]
-                    cv2.circle(frame, (centerX,centerY), 1,(0, 255, 0), 2)
-                    if(showNumber): cv2.putText(frame, cname, (centerX,centerY),cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 1)
-           
+    if(args['showPreviousData']):
+        for cname in old_data.columns:
+            if not 'Unnamed' in cname and  not 'timestamp' in cname and not 'index' in cname:
+                if old_data.shape[0]>framenumber:
+                    if isinstance(old_data.at[int(framenumber),cname], str):
+                        tupledata = tuple(map(int, old_data.at[framenumber,cname].replace('(', '').replace(')', '').split(', ') ))
+                        centerX= tupledata[0]
+                        centerY= tupledata[1]
+                        cv2.circle(frame, (centerX,centerY), 1,(0, 255, 0), 2)
+                        if(showNumber): cv2.putText(frame, cname, (centerX,centerY),cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 1)
+         
     return frame
 
 def updateData():
@@ -220,7 +239,9 @@ while True:
     key = cv2.waitKey(1) & 0xFF
 
     if key == ord("s"): addTracker(frame)
-        
+    
+    elif key == ord("d"): deleteTracker()
+
     elif key == ord("e"): break
 
 #save csv

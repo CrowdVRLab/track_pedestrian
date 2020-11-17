@@ -197,7 +197,6 @@ for cname in old_data.columns:
             new_user = pd.DataFrame(data=new_d)            
             new_data = new_data.append(new_user) 
 
-
 new_data.to_csv(args["path"]+"/"+"tracking_data_per_user_resampled.csv")
 
 #https://devconnected.com/how-to-remove-files-from-git-commit/
