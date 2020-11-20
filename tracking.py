@@ -18,7 +18,7 @@ ap.add_argument("-s", "--showID", type=bool, default=False,
 	help="Show the ID of the tracked objects loaded from tracking_data.csv")
 ap.add_argument("-sP", "--showPreviousData", type=bool, default=True,
 	help="Only play old data")
-ap.add_argument("-pM", "--playMode", type=bool, default=True,
+ap.add_argument("-pM", "--playMode", type=bool, default=False,
 	help="Only play old data")
 args = vars(ap.parse_args())
 

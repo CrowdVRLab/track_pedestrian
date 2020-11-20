@@ -68,3 +68,13 @@ id |  guid | x | y | dir_x | dir_y | radius | time |
 (int) | (int) | (float) | (float)  | (float)  | (float)  | (float)| (float)| 
 
 
+### Dependencies
+
+imutils               0.5.3
+matplotlib            3.3.2
+numpy                 1.19.2
+opencv-contrib-python 4.4.0.44
+opencv-python         4.4.0.44
+pandas                1.1.3
+pykalman              0.9.5
+scipy                 1.5.4
