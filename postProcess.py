@@ -10,7 +10,7 @@ import argparse
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-p", "--path", type=str, default="video4",
+ap.add_argument("-p", "--path", type=str, default="video1",
 	help="Path to input video file")
 ap.add_argument("-k", "--kalman", type=bool, default=True,
 	help="Apply Kalman filter")
@@ -20,8 +20,8 @@ ap.add_argument("-mX", "--mirrorX", type=bool, default=False,
 	help="Mirror X data")
 ap.add_argument("-mY", "--mirrorY", type=bool, default=True,
 	help="Mirror Y data")
-ap.add_argument("-pR", "--plotResults", type=bool, default=False,
-	help="Mirror Y data")
+ap.add_argument("-pR", "--plotResults", type=bool, default=True,
+	help="plot Results")
 args = vars(ap.parse_args())
 
 #data to be converted and relative video
@@ -74,7 +74,7 @@ def kalman(x,y):
     kf2 = KalmanFilter(transition_matrices = transition_matrix,
                   observation_matrices = observation_matrix,
                   initial_state_mean = initial_state_mean,
-                  observation_covariance = 10000000*kf1.observation_covariance,
+                  observation_covariance = 100000*kf1.observation_covariance,
                   em_vars=['transition_covariance', 'initial_state_covariance'])
 
     kf2 = kf2.em(measurements, n_iter=5)
